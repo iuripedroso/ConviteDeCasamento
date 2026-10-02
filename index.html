@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Convite Luziane e Anderson</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,15 +23,12 @@
 
   * { box-sizing: border-box; }
 
-  html, body {
-    height: 100%;
-    margin: 0;
-  }
-
   body {
+    margin: 0;
     font-family: 'Cormorant Garamond', serif;
     color: var(--text-dark);
     background: #f4e6d8;
+    min-height: 100%;
     overflow-x: hidden;
   }
 
@@ -96,11 +93,12 @@
   .stage {
     position: relative;
     z-index: 2;
-    min-height: 100%;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: max(32px, env(safe-area-inset-top, 0px)) 24px max(32px, env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
   }
 
   .card {
@@ -110,7 +108,7 @@
     position: relative;
   }
 
-  /* ---------- STAGE 1: PRELÚDIO (typewriter) ---------- */
+  /* ---------- ETAPA 1: PRELÚDIO (máquina de escrever) ---------- */
 
   #prelude-stage.hidden { display: none; }
 
@@ -162,8 +160,8 @@
     50% { opacity: 0; }
   }
 
-  .reveal-btn {
-    margin-top: 26px;
+  .reveal-btn,
+  .soft-btn {
     font-family: 'Cormorant Garamond', serif;
     font-size: 15px;
     letter-spacing: 2.5px;
@@ -174,6 +172,10 @@
     border-radius: 999px;
     background: rgba(255, 250, 245, 0.55);
     cursor: pointer;
+  }
+
+  .reveal-btn {
+    margin-top: 26px;
     opacity: 0;
     transform: translateY(6px);
     transition: opacity 0.6s ease, transform 0.6s ease;
@@ -192,23 +194,61 @@
     50% { opacity: 1; }
   }
 
-  /* ---------- STAGE 2: INVITE ---------- */
+  /* ---------- ETAPA 2: CARTA COM DUAS FOLHAS ---------- */
 
-  #invite-card {
+  #letter {
     display: none;
-    background: var(--cream-glass);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(232, 183, 169, 0.6);
-    border-radius: 14px;
-    padding: 48px 32px;
-    box-shadow: 0 20px 50px rgba(92, 51, 37, 0.2);
+    position: relative;
     animation: card-reveal 0.7s ease;
   }
 
+  #letter.open { display: grid; }
+
   @keyframes card-reveal {
     from { opacity: 0; transform: translateY(12px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .sheet {
+    grid-area: 1 / 1;
+    border: 1px solid rgba(232, 183, 169, 0.6);
+    border-radius: 14px;
+    padding: 48px 32px 36px;
+    box-shadow: 0 20px 50px rgba(92, 51, 37, 0.2);
+  }
+
+  /* folha de trás: aparece "espiando" por baixo, levemente torta */
+  .sheet-back {
+    background: rgba(253, 243, 240, 0.94);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transform: rotate(3deg) translate(8px, 10px);
+    transition: transform 0.5s cubic-bezier(.2,.8,.2,1);
+  }
+
+  #letter.revealed .sheet-back { transform: none; }
+
+  /* folha da frente: arrastável */
+  .sheet-front {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 250, 245, 0.98);
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.45s cubic-bezier(.2,.8,.2,1), opacity 0.45s ease;
+    will-change: transform;
+  }
+
+  .sheet-front.dragging {
+    transition: none;
+    cursor: grabbing;
+  }
+
+  .sheet-front:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 4px;
   }
 
   .invite-eyebrow {
@@ -247,18 +287,6 @@
     margin: 24px auto;
   }
 
-  .details {
-    font-size: 18px;
-    line-height: 2;
-    color: var(--text-dark);
-    margin-bottom: 24px;
-  }
-
-  .details .icon {
-    color: var(--blush-700);
-    margin-right: 6px;
-  }
-
   .footer-note {
     font-family: 'Great Vibes', cursive;
     font-size: 24px;
@@ -266,16 +294,126 @@
     margin-top: 8px;
   }
 
+  .swipe-hint {
+    margin-top: 22px;
+    font-size: 13px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--blush-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .swipe-hint .arrow {
+    display: inline-block;
+    color: var(--gold);
+    animation: nudge 1.6s ease-in-out infinite;
+  }
+
+  .swipe-hint .arrow.left { animation-name: nudge-left; }
+
+  @keyframes nudge {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+  }
+
+  @keyframes nudge-left {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-5px); }
+  }
+
+  /* conteúdo da folha de trás */
+  .back-title {
+    font-family: 'Great Vibes', cursive;
+    font-size: 42px;
+    color: var(--blush-900);
+    line-height: 1.2;
+  }
+
+  .date-line {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--blush-900);
+    margin-top: 6px;
+  }
+
+  .schedule {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 280px;
+  }
+
+  .schedule li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 18px;
+    border-bottom: 1px dashed rgba(184, 147, 95, 0.4);
+  }
+
+  .schedule li:last-child { border-bottom: none; }
+
+  .schedule .label {
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-size: 14px;
+    color: var(--blush-700);
+  }
+
+  .schedule .time {
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .place-name {
+    font-size: 21px;
+    font-weight: 600;
+    color: var(--blush-900);
+  }
+
+  .place-address {
+    font-size: 17px;
+    line-height: 1.5;
+    margin: 4px 0 18px;
+  }
+
+  .map-btn {
+    display: inline-block;
+    text-decoration: none;
+  }
+
+  .back-again {
+    display: block;
+    margin: 20px auto 0;
+    font-size: 13px;
+    padding: 9px 22px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  #letter.revealed .back-again {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    #invite-card { animation: none; }
+    #letter { animation: none; }
     .caret { animation: none; }
     .reveal-btn.show { animation: none; }
+    .swipe-hint .arrow { animation: none; }
+    .sheet-front, .sheet-back { transition: none; }
   }
 </style>
 </head>
 <body>
 
-<div class="bg"><img src="img2.jpg" alt=""></div>
+<div class="bg"><img src="https://github.com/iuripedroso/ConviteDeCasamento/blob/main/img2.jpg?raw=true" alt=""></div>
 <div class="hearts" id="hearts"></div>
 
 <div class="stage">
@@ -296,29 +434,90 @@
       <button class="reveal-btn" id="reveal-btn" onclick="openInvite()">Abrir o convite</button>
     </div>
 
-    <div id="invite-card">
-      <div class="invite-eyebrow">Convite especial</div>
-      <div class="names">Luziane</div>
-      <div class="and">&amp;</div>
-      <div class="names">Anderson</div>
+    <div id="letter">
 
-      <p class="invite-msg">convidam com muito carinho para<br>celebrar o seu casamento</p>
+      <!-- FOLHA DE TRÁS: localização e horários -->
+      <div class="sheet sheet-back" id="sheet-back">
+        <div class="back-title">Quando &amp; onde</div>
+        <div class="date-line" id="info-data"></div>
 
-      <div class="divider"></div>
+        <div class="divider"></div>
 
-      <div class="details">
-        <div><span class="icon">&#128197;</span>Data a confirmar</div>
-        <div><span class="icon">&#128205;</span>Local a confirmar</div>
+        <ul class="schedule" id="info-horarios"></ul>
+
+        <div class="divider"></div>
+
+        <div class="place-name" id="info-local"></div>
+        <div class="place-address" id="info-endereco"></div>
+        <a class="soft-btn map-btn" id="info-mapa" target="_blank" rel="noopener">&#128205; Ver no mapa</a>
+
+        <button class="soft-btn back-again" id="back-again" type="button">&#8634; Ver a mensagem</button>
       </div>
 
-      <div class="footer-note">Sua presença é o maior presente</div>
+      <!-- FOLHA DA FRENTE: arrastável -->
+      <div class="sheet sheet-front" id="sheet-front" tabindex="0"
+           aria-label="Convite. Arraste para o lado ou use as setas para ver local e horários.">
+        <div class="invite-eyebrow">Convite especial</div>
+        <div class="names">Luziane</div>
+        <div class="and">&amp;</div>
+        <div class="names">Anderson</div>
+
+        <p class="invite-msg">convidam com muito carinho para<br>celebrar o seu casamento</p>
+
+        <div class="divider"></div>
+
+        <div class="footer-note">Sua presença é o maior presente</div>
+
+        <div class="swipe-hint">
+          <span class="arrow left">&larr;</span>
+          arraste para ver o local
+          <span class="arrow">&rarr;</span>
+        </div>
+      </div>
+
     </div>
 
   </div>
 </div>
 
 <script>
-  // floating hearts, toned to the invite palette
+  // =========================================================
+  //  EDITE AQUI: data, horários e local do casamento
+  // =========================================================
+  var INFO = {
+    data: "Data a confirmar",               // ex.: "Sábado, 14 de março de 2027"
+    horarios: [
+      { label: "Cerimônia", hora: "a confirmar" },   // ex.: "16h00"
+      { label: "Recepção",  hora: "a confirmar" }    // ex.: "18h30"
+    ],
+    local: "Local a confirmar",             // ex.: "Espaço Jardim das Flores"
+    endereco: "Endereço a confirmar",       // ex.: "Rua X, 123 – Bairro, Cidade/UF"
+    // link do mapa: deixe "" para gerar automaticamente pelo endereço,
+    // ou cole o link de compartilhamento do Google Maps
+    mapa: ""
+  };
+
+  (function fillInfo() {
+    document.getElementById('info-data').textContent = INFO.data;
+    document.getElementById('info-local').textContent = INFO.local;
+    document.getElementById('info-endereco').textContent = INFO.endereco;
+
+    var list = document.getElementById('info-horarios');
+    INFO.horarios.forEach(function (h) {
+      var li = document.createElement('li');
+      var a = document.createElement('span'); a.className = 'label'; a.textContent = h.label;
+      var b = document.createElement('span'); b.className = 'time'; b.textContent = h.hora;
+      li.appendChild(a); li.appendChild(b);
+      list.appendChild(li);
+    });
+
+    var mapUrl = INFO.mapa ||
+      'https://www.google.com/maps/search/?api=1&query=' +
+      encodeURIComponent(INFO.local + ' ' + INFO.endereco);
+    document.getElementById('info-mapa').href = mapUrl;
+  })();
+
+  // corações flutuando
   (function () {
     var layer = document.getElementById('hearts');
     var colors = [
@@ -349,7 +548,7 @@
     setInterval(spawnHeart, 900);
   })();
 
-  // typewriter intro
+  // máquina de escrever
   (function () {
     var lines = [
       "Existem histórias que a gente escreve sozinho,",
@@ -402,9 +601,78 @@
 
   function openInvite() {
     document.getElementById('prelude-stage').classList.add('hidden');
-    document.getElementById('invite-card').style.display = 'block';
+    document.getElementById('letter').classList.add('open');
   }
-</script>
 
+  // arrastar a folha da frente para o lado
+  (function () {
+    var letter = document.getElementById('letter');
+    var front = document.getElementById('sheet-front');
+    var backAgain = document.getElementById('back-again');
+
+    var startX = 0, startY = 0, dx = 0;
+    var dragging = false, gone = false;
+
+    function flyAway(dir) {
+      var w = front.offsetWidth;
+      front.style.transform = 'translateX(' + (dir * (w + 120)) + 'px) rotate(' + (dir * 16) + 'deg)';
+      front.style.opacity = '0';
+      front.style.pointerEvents = 'none';
+      front.setAttribute('aria-hidden', 'true');
+      gone = true;
+      letter.classList.add('revealed');
+      setTimeout(function () { backAgain.focus({ preventScroll: true }); }, 450);
+    }
+
+    function bringBack() {
+      front.style.transform = '';
+      front.style.opacity = '';
+      front.style.pointerEvents = '';
+      front.removeAttribute('aria-hidden');
+      gone = false;
+      letter.classList.remove('revealed');
+    }
+
+    front.addEventListener('pointerdown', function (e) {
+      if (gone) return;
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      dx = 0;
+      front.setPointerCapture(e.pointerId);
+      front.classList.add('dragging');
+    });
+
+    front.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      dx = e.clientX - startX;
+      var dy = (e.clientY - startY) * 0.15;
+      front.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (dx / 18) + 'deg)';
+    });
+
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      front.classList.remove('dragging');
+      if (Math.abs(dx) > front.offsetWidth * 0.28) {
+        flyAway(dx > 0 ? 1 : -1);
+      } else {
+        front.style.transform = '';
+      }
+    }
+
+    front.addEventListener('pointerup', endDrag);
+    front.addEventListener('pointercancel', endDrag);
+
+    // teclado: setas ou Enter também viram a folha
+    front.addEventListener('keydown', function (e) {
+      if (gone) return;
+      if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flyAway(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); flyAway(-1); }
+    });
+
+    backAgain.addEventListener('click', bringBack);
+  })();
+</script>
 </body>
 </html>
